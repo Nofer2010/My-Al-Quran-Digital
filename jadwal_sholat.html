@@ -161,7 +161,6 @@
         
         let timerInterval = null;
 
-        // Data Cadangan Lokal (Fallback) agar langsung tampil tanpa macet di teks "Memuat..."
         const fallbackJadwalHariIni = {
             imsak: "04:02", subuh: "04:12", terbit: "05:29", dhuha: "05:52", dzuhur: "11:39", ashar: "14:45", maghrib: "17:47", isya: "18:56"
         };
@@ -177,13 +176,11 @@
             document.getElementById('tanggalHariIni').innerText = dateObj.toLocaleDateString('id-ID', options);
             document.getElementById('lokasiTeks').innerText = `📍 Lokasi: ${namaLokasi}`;
 
-            // Tampilkan data cadangan dulu agar instan
             tampilkanJadwalHariIni(fallbackJadwalHariIni);
             mulaiCountdown(fallbackJadwalHariIni);
             tampilkanTabelStatik(namaLokasi);
 
             try {
-                // Ambil data live dari API
                 const resHari = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${dateStr}`, { mode: 'cors' });
                 const dataHari = await resHari.json();
                 
@@ -197,10 +194,11 @@
 
                 if(dataBulan.status && dataBulan.data && dataBulan.data.jadwal) {
                     tampilkanTabelBulanan(dataBulan.data.jadwal, day);
-                    document.getElementById('bulanTahunLabel').innerText = `Jadwal sholat ${namaLokasi} bulan ${dataBulan.data.bulan} ${year}`;
+                    const namaBulanArr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                    const namaBulanStr = namaBulanArr[parseInt(month) - 1] || "";
+                    document.getElementById('bulanTahunLabel').innerText = `Jadwal sholat ${namaLokasi} bulan ${namaBulanStr} ${year}`;
                 }
             } catch(e) {
-                // Jika koneksi gagal, sistem tetap aman menggunakan data fallback
                 console.log("Menggunakan mode offline/fallback");
             }
         }
@@ -259,8 +257,11 @@
                 const isToday = String(item.date).endsWith(`-${hariIni}`) || item.date == hariIni;
                 const tr = document.createElement('tr');
                 if (isToday) tr.className = 'today-row';
+                
+                const namaHari = item.tanggal ? item.tanggal.split(',')[0] : '';
+                
                 tr.innerHTML = `
-                    <td>${item.hari}</td>
+                    <td>${namaHari}</td>
                     <td>${item.tanggal}</td>
                     <td>${item.imsak}</td>
                     <td>${item.subuh}</td>
@@ -339,7 +340,6 @@
             }, 1000);
         }
 
-        // Inisialisasi awal Kota Depok
         muatSemuaJadwal("1221", "Kota Depok");
     </script>
 </body>
