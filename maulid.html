@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maulid - My Al-Quran Digital</title>
+    <meta name="theme-color" content="#0ca678">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-main: #ffffff; --bg-card: #ffffff; --bg-body: #f8f9fa; --text-main: #212529; --text-muted: #6c757d; --border-color: #e9ecef; --primary: #0b8061; --primary-light: #0ca678; --header-bg: var(--primary); --number-bg: #f1f3f5; }
+        body.dark-mode { --bg-main: #121212; --bg-card: #1e1e1e; --bg-body: #0a0a0a; --text-main: #e9ecef; --text-muted: #adb5bd; --border-color: #343a40; --primary: #0ca678; --header-bg: #1e1e1e; --number-bg: #2d2d2d; }
+        * { box-sizing: border-box; } body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Header & Sidebar */
+        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .menu-icon { cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 5px; }
+        .menu-icon span { display: block; width: 22px; height: 2px; background-color: white; border-radius: 2px; }
+        .brand-logo { height: 30px; width: auto; border-radius: 4px; }
+        .theme-toggle { background: none; border: none; color: white; cursor: pointer; padding: 0; display: flex; }
+        
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; width: 280px; background-color: var(--bg-card); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar.active { left: 0; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { border-bottom: 1px solid var(--border-color); }
+        .sidebar-menu li a { display: flex; flex-direction: column; padding: 15px 20px; text-decoration: none; color: var(--text-main); gap: 4px; }
+        .sidebar-menu li.active a { background-color: rgba(12, 166, 120, 0.1); color: var(--primary-light); border-left: 4px solid var(--primary-light); }
+        .sidebar-menu li a strong { font-weight: 600; } .sidebar-menu li a small { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Container */
+        .container { max-width: 800px; margin: 0 auto; min-height: 100vh; background: var(--bg-main); padding: 20px 15px 50px 15px; }
+        
+        /* Halaman Utama Kategori */
+        #main-category-view { display: block; }
+        .page-title { text-align: center; font-size: 1.6rem; font-weight: 700; margin: 10px 0 5px 0; color: var(--text-main); }
+        .page-subtitle { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
+        
+        .category-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .category-card:active { transform: scale(0.99); }
+        .cat-left { display: flex; align-items: center; gap: 15px; }
+        .cat-icon-box { width: 45px; height: 45px; background: rgba(12, 166, 120, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary-light); }
+        .cat-title { font-size: 1.05rem; font-weight: 600; color: var(--text-main); margin-bottom: 3px; }
+        .cat-count { font-size: 0.85rem; color: var(--text-muted); }
+        .arrow-icon { color: var(--text-muted); font-size: 1.2rem; }
+
+        /* Halaman Detail Maulid */
+        #detail-maulid-view { display: none; }
+        .btn-back-kategori { background: var(--number-bg); border: none; padding: 8px 16px; border-radius: 50px; cursor: pointer; font-weight: 500; margin-bottom: 15px; color: var(--text-main); display: inline-flex; align-items: center; gap: 6px; }
+        
+        /* Dropdown Daftar Isi */
+        .dropdown-container { position: relative; margin-bottom: 25px; }
+        .dropdown-select-btn { width: 100%; padding: 12px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 500; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .maulid-item-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; }
+        .maulid-header-title { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .maulid-number { font-weight: 700; color: var(--primary-light); font-size: 1.1rem; }
+        .maulid-name { font-weight: 600; font-size: 1.1rem; color: var(--text-main); flex: 1; }
+        
+        .maulid-arab { font-family: 'Amiri', serif; font-size: 2.1rem; line-height: 2.2; text-align: right; margin-bottom: 20px; color: var(--text-main); direction: rtl; }
+        .maulid-latin { font-size: 0.95rem; color: var(--primary-light); margin-bottom: 12px; line-height: 1.6; font-style: italic; }
+        .maulid-arti { font-size: 0.95rem; color: var(--text-main); line-height: 1.6; }
+
+        /* Modal Daftar Isi */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1050; display: none; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; align-items: flex-end; }
+        .modal-content { width: 100%; background: var(--bg-card); border-radius: 20px 20px 0 0; max-height: 70vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px; }
+        .modal-list-item { padding: 12px 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; gap: 15px; font-size: 0.95rem; color: var(--text-main); }
+        .modal-list-item:hover { background: var(--number-bg); }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebarMenu">
+        <div class="sidebar-header"><h2>Menu</h2><button class="close-btn" onclick="closeSidebar()">×</button></div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><strong>Al-Qur'an</strong><small>Daftar Surah</small></a></li>
+            <li><a href="tahlil.html"><strong>Tahlil</strong><small>Bacaan tahlil dan Yasin</small></a></li>
+            <li><a href="doa.html"><strong>Doa</strong><small>Kumpulan doa harian</small></a></li>
+            <li><a href="wirid.html"><strong>Wirid</strong><small>Kumpulan wirid</small></a></li>
+            <li class="active"><a href="maulid.html"><strong>Maulid</strong><small>Bacaan maulid dan qasidah</small></a></li>
+            <li><a href="hadits.html"><strong>Hadits</strong><small>Koleksi hadits dan terjemah</small></a></li>
+            <li><a href="jadwal_sholat.html"><strong>Jadwal Sholat</strong><small>Waktu sholat harian</small></a></li>
+        </ul>
+    </div>
+
+    <!-- Header -->
+    <header id="mainHeader">
+        <div class="header-left">
+            <div class="menu-icon" onclick="openSidebar()"><span></span><span></span><span></span></div>
+            <img src="logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <svg id="themeIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </header>
+
+    <div class="container">
+        <!-- Tampilan Kategori Utama -->
+        <div id="main-category-view">
+            <h1 class="page-title">Maulid</h1>
+            <p class="page-subtitle">Kumpulan pembacaan maulid dan qasidah standar NU Online.</p>
+            <div id="category-list-container"></div>
+        </div>
+
+        <!-- Tampilan Detail Maulid per Kitab -->
+        <div id="detail-maulid-view">
+            <button class="btn-back-kategori" onclick="kembaliKeKategori()">⬅ Daftar Kitab</button>
+            <div class="dropdown-container">
+                <div class="dropdown-select-btn" onclick="openModal()">
+                    <span id="dropdownCurrentLabel">Pilih Bagian...</span>
+                    <span>▼</span>
+                </div>
+            </div>
+            <div id="maulid-items-container"></div>
+        </div>
+    </div>
+
+    <!-- Modal Daftar Isi -->
+    <div class="modal-overlay" id="modalDaftarIsi" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <strong>Daftar isi</strong>
+                <button class="close-btn" onclick="closeModal()" style="font-size:1.2rem;">×</button>
+            </div>
+            <div id="modal-list-items"></div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Database Lengkap Kitab Maulid Sesuai Standar NU Online --- */
+        const databaseMaulid = {
+            "dibai": {
+                title: "Maulid Diba'i",
+                items: [
+                    {
+                        title: "Niat dan Hadiah Fatihah",
+                        arab: "نَوَيْتُ قِرَاءَةَ الْمَوْلِدِ الدِّبَعِيِّ مِثْلَ مَا نَوَى صَاحِبُ الْمَوْلِدِ الشَّيْخُ عَبْدُ الرَّحْمَنِ الدِّبَعِيُّ وَمِثْلَ مَا نَوَى مَشَايِخُنَا",
+                        latin: "Nawaitu qirâ'atal-maulidid-diba'i mitsla mâ nawâ shâhibul-maulid as-Syaikh 'Abdirrahmân ad-Diba'i wa mitsla mâ nawâ masyâyikhinâ",
+                        arti: "“Saya berniat membaca maulid ad-Diba'i sebagaimana niat pengarang bacaan maulid ini, yaitu Syaikh Abdur Rahman ad-Diba'i dan sebagaimana niatnya guru-guru saya.”"
+                    },
+                    {
+                        title: "Ya Rabbi Shalli 'Ala Muhammad",
+                        arab: "يَا رَبِّ صَلِّ عَلَى مُحَمَّدْ ۞ يَا رَبِّ صَلِّ عَلَيْهِ وَسَلِّمْ",
+                        latin: "Yâ rabbi shalli 'alâ muḫammad ۞ yâ rabbi shalli 'alayhi wa sallim",
+                        arti: "“Ya Tuhanku, limpahkanlah shalawat kepada Nabi Muhammad. Ya Tuhanku, limpahkanlah shalawat dan salam atasnya.”"
+                    },
+                    {
+                        title: "Ya Rabbi Ballighhul Wasiilah",
+                        arab: "يَا رَبِّ بَلِّغْهُ الْوَسِيلَةَ ۞ يَا رَبِّ خُصُّهُ بِالْفَضِيلَةْ",
+                        latin: "Yâ rabbi ballighhul-wasîlah ۞ yâ rabbi khushshuhu bil-fadîlah",
+                        arti: "“Ya Tuhanku, sampaikanlah ia kepada perantara (wasilah). Ya Tuhanku, khususkanlah ia dengan keutamaan.”"
+                    },
+                    {
+                        title: "Mahalul Qiyam Diba'i (Marhaban)",
+                        arab: "مَرْحَبًا يَا زَيْنَ الْوُجُودِ ۞ مَرْحَبًا يَا نَزِيلَ الْقَلْبِ",
+                        latin: "Marḫaban yâ zainal-wujûd ۞ marḫaban yâ nazîlal-qalbi",
+                        arti: "“Selamat datang wahai perhiasan alam wujud, selamat datang wahai yang menempati hati.”"
+                    }
+                ]
+            },
+            "barzanji": {
+                title: "Maulid Barzanji",
+                items: [
+                    {
+                        title: "Ibtida' (Puji-pujian Awal)",
+                        arab: "ابْتَدِئُ الإِمْلَاءَ بِاسْمِ الذَّاتِ الْعَلِيَّةِ، مُتَبَرِّكًا بِهِ مُسْتَوْدِعًا حِفْظَهُ الْعَوَامِلَ الْجَلِيَّةَ",
+                        latin: "Ibtadi’ul-imlâ’a bismidz-dzâtil-‘aliyyah, mutabarrikan bihi mustawdِ‘an ḫifzhahul-‘awâmilal-jaliyyah",
+                        arti: "“Aku memulai penulisan dengan menyebut nama Zat Yang Maha Tinggi, memohon berkah dengan-Nya serta menitipkan penjagaan-Nya...”"
+                    },
+                    {
+                        title: "Kelahiran Nabi SAW",
+                        arab: "وَحَمَلَتْهُ أُمُّهُ آمِنَةُ بِنْتُ وَهَبٍ رَضِيَ اللَّهُ عَنْهَا",
+                        latin: "Wa ḫamalat-hu ummuhû âminatu bintu wahab radiyal-lâhu 'anhâ",
+                        arti: "“Dan ibunya, Aminah binti Wahab radhiyallahu 'anha, mengandungnya...”"
+                    }
+                ]
+            },
+            "syarafil_anam": {
+                title: "Maulid Syarafil Anam",
+                items: [
+                    {
+                        title: "As-salāmu 'alaika Zainal Anbiyā'",
+                        arab: "السَّلَامُ عَلَيْكَ زَيْنَ الْأَنْبِيَاءِ ۞ السَّلَامُ عَلَيْكَ أَتْقَى الْأَتْقِيَاءِ",
+                        latin: "Assalâmu 'alayka zainal-anbyâ' ۞ Assalâmu 'alayka atqal-atqyâ'",
+                        arti: "“Keselamatan semoga tercurah untukmu, wahai sebaik-baiknya nabi. Keselamatan semoga tetap tercurah kepadamu, wahai setakwa-takwanya orang bertakwa.[span_0](start_span)”[span_0](end_span)"
+                    },
+                    {
+                        title: "As-salāmu 'alaika Ashfayall-Ashfiyā'",
+                        arab: "السَّلَامُ عَلَيْكَ أَصْفَى الْأَصْفِيَاءِ ۞ السَّلَامُ عَلَيْكَ أَزْكَى الْأَزْكِيَاءِ",
+                        latin: "Assalâmu 'alayka ashfayall-ashfiya' ۞ Assalâmu 'alayka azkal-azkiyâ'",
+                        arti: "“Keselamatan semoga tercurah untukmu, wahai sebersih-bersihnya orang yang bersih. Keselamatan semoga tercurah untukmu, wahai sesuci-sucinya orang yang suci.[span_1](start_span)”[span_1](end_span)"
+                    },
+                    {
+                        title: "As-salāmu 'alaika Min Rabbis-Samā'",
+                        arab: "السَّلَامُ عَلَيْكَ مِنْ رَبِّ السَّمَاءِ ۞ السَّلَامُ عَلَيْكَ دَامَ بِلَا انْقِضَاءِ",
+                        latin: "Assalâmu 'alayka min rabbis-samâ' ۞ Assalâmu 'alayka dâma bilân-qidhâ'",
+                        arti: "“Keselamatan semoga tercurah untukmu dari Tuhan penguasa langit. Keselamatan semoga tercurah untukmu selama-lamanya tanpa henti.[span_2](start_span)”[span_2](end_span)"
+                    }
+                ]
+            },
+            "simtudduror": {
+                title: "Simthud Durar",
+                items: [
+                    {
+                        title: "Alhamdu Lillāhil Qawiyyil Sulthān",
+                        arab: "الْحَمْدُ لِلَّهِ الْقَوِيِّ سُلْطَانُهُ، الْوَاضِحِ بُرْهَانُهُ",
+                        latin: "Al-ḫamdu lillâhil-qawiyyi sulthânuh, al-wâdhihi burhânuh",
+                        arti: "“Segala puji bagi Allah yang sangat kuat kekuasaan-Nya, dan yang nyata keterangan-Nya.”"
+                    },
+                    {
+                        title: "Mahalul Qiyam Simthud Durar",
+                        arab: "يَا نَبِي سَلَامُ عَلَيْكَ ۞ يَا رَسُولُ سَلَامُ عَلَيْكَ",
+                        latin: "Yâ nabî salâm ‘alayka ۞ yâ rasûl salâm ‘alayka",
+                        arti: "“Wahai Nabi, salam sejahtera atasmu. Wahai Rasul, salam sejahtera atasmu.”"
+                    }
+                ]
+            },
+            "burdah": {
+                title: "Qasidah Burdah",
+                items: [
+                    {
+                        title: "Bait 1 (Mawlāya Shalli Wa Sallim)",
+                        arab: "مَوْلَايَ صَلِّ وَسَلِّمْ دَائِمًا أَبَدًا ۞ عَلَى حَبِيبِكَ خَيْرِ الْخَلْقِ كُلِّهِمِ",
+                        latin: "Mawlâya shalli wa sallim dâ'iman abadâ ۞ ‘alâ ḫabibika khairil-khalqi kullihimi",
+                        arti: "“Ya Tuhanku, limpahkanlah selalu rahmat dan keselamatan selamanya kepada kekasih-Mu yang terbaik di antara seluruh makhluk.[span_3](start_span)”[span_3](end_span)"
+                    },
+                    {
+                        title: "Bait 2 (A-min Tadzakkuri Jīrānin)",
+                        arab: "أَمِنْ تَذَكُّرِ جِيرَانٍ بِذِي سَلَمِ ۞ مَزَجْتَ دَمْعًا جَرَى مِنْ مُقْلَةٍ بِدَمِ",
+                        latin: "Amîn tadzakkuri jîrânin bidzi salami ۞ mazajta dam'an jarâ min muqlatin bidami",
+                        arti: "“Apakah karena mengingat para kekasih di Dzi Salam sana, Engkau deraikan air mata dengan darah duka?[span_4](start_span)”[span_4](end_span)"
+                    }
+                ]
+            },
+            "dliyaul_lami": {
+                title: "Adl-Dliyaul Lami'",
+                items: [
+                    {
+                        title: "Yā Rabbi shalli ‘alā Muḥammad (1)",
+                        arab: "يَا رَبِّ صَلِّ عَلَى مُحَمَّدْ ۞ حَبِيبِكَ الشَّافِعِ الْمُشَفَّعِ",
+                        latin: "Yâ rabbi shalli 'alâ muḫammad ۞ ḫabîwikas-syâfi'il-musyaffa'",
+                        arti: "“Ya Rabb limpahkanlah rahmat atas Nabi Muhammad SAW. Kekasih-Mu pemberi syafaat yang diharapkan syafaatnya.[span_5](start_span)”[span_5](end_span)"
+                    },
+                    {
+                        title: "Yā Rabbi shalli ‘alā Muḥammad (2)",
+                        arab: "يَا رَبِّ صَلِّ عَلَى مُحَمَّدْ ۞ أَعْلَى الْوَرَى رُتْبَةً وَأَرْفَعْ",
+                        latin: "Yâ rabbi shalli 'alâ muḫammad ۞ a'lal-warâ rutbatan wa arfa'",
+                        arti: "“Ya Rabb limpahkanlah rahmat atas Nabi Muhammad SAW. Manusia yang teramat sangat luhur derajatnya.[span_6](start_span)”[span_6](end_span)"
+                    }
+                ]
+            },
+            "azab": {
+                title: "Maulid 'Azab",
+                items: [
+                    {
+                        title: "Puji-pujian Maulid 'Azab",
+                        arab: "يَا حَافِظَ الْعَالَمِينَ، صَلِّ عَلَى نَبِيِّكَ الأمِينِ",
+                        latin: "Yâ ḫâfizhal-‘âlamîn, shalli ‘alâ nabiyyikal-amîn",
+                        arti: "“Wahai Pemelihara alam semesta, limpahkanlah shalawat kepada nabi-Mu yang terpercaya.”"
+                    }
+                ]
+            }
+        };
+
+        let currentActiveCategoryKey = null;
+
+        function renderCategories() {
+            const container = document.getElementById('category-list-container');
+            container.innerHTML = '';
+            const iconSvg = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
+
+            for (const key in databaseMaulid) {
+                const cat = databaseMaulid[key];
+                const count = cat.items.length;
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = () => bukaKategori(key);
+                card.innerHTML = `
+                    <div class="cat-left">
+                        <div class="cat-icon-box">${iconSvg}</div>
+                        <div>
+                            <div class="cat-title">${cat.title}</div>
+                            <div class="cat-count">${count} bacaan</div>
+                        </div>
+                    </div>
+                    <div class="arrow-icon">›</div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function bukaKategori(key) {
+            currentActiveCategoryKey = key;
+            document.getElementById('main-category-view').style.display = 'none';
+            document.getElementById('detail-maulid-view').style.display = 'block';
+            const catData = databaseMaulid[key];
+            
+            const container = document.getElementById('maulid-items-container');
+            container.innerHTML = '';
+            catData.items.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'maulid-item-card';
+                itemEl.id = `maulid-item-${index}`;
+                itemEl.innerHTML = `
+                    <div class="maulid-header-title">
+                        <div class="maulid-number">${index + 1}</div>
+                        <div class="maulid-name">${item.title}</div>
+                    </div>
+                    <div class="maulid-arab">${item.arab}</div>
+                    <div class="maulid-latin">${item.latin}</div>
+                    <div class="maulid-arti">${item.arti}</div>
+                `;
+                container.appendChild(itemEl);
+            });
+
+            const modalList = document.getElementById('modal-list-items');
+            modalList.innerHTML = '';
+            catData.items.forEach((item, index) => {
+                const li = document.createElement('div');
+                li.className = 'modal-list-item';
+                li.onclick = () => pilihMaulidDariModal(index);
+                li.innerHTML = `<strong>${index + 1}.</strong> <span>${item.title}</span>`;
+                modalList.appendChild(li);
+            });
+
+            document.getElementById('dropdownCurrentLabel').innerText = catData.items[0].title;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function kembaliKeKategori() {
+            document.getElementById('detail-maulid-view').style.display = 'none';
+            document.getElementById('main-category-view').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openModal() { document.getElementById('modalDaftarIsi').classList.add('active'); }
+        function closeModal() { document.getElementById('modalDaftarIsi').classList.remove('active'); }
+        function closeModalOutside(e) { if(e.target.id === 'modalDaftarIsi') closeModal(); }
+
+        function pilihMaulidDariModal(index) {
+            closeModal();
+            const targetEl = document.getElementById(`maulid-item-${index}`);
+            if(targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const catData = databaseMaulid[currentActiveCategoryKey];
+                document.getElementById('dropdownCurrentLabel').innerText = catData.items[index].title;
+            }
+        }
+
+        function openSidebar() { document.getElementById('sidebarMenu').classList.add('active'); document.getElementById('sidebarOverlay').classList.add('active'); }
+        function closeSidebar() { document.getElementById('sidebarMenu').classList.remove('active'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+        
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                document.getElementById('mainHeader').style.backgroundColor = '#1e1e1e';
+            } else {
+                themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                document.getElementById('mainHeader').style.backgroundColor = 'var(--primary)';
+            }
+        }
+
+        renderCategories();
+    </script>
+</body>
+</html>

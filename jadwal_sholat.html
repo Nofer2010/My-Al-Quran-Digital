@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Sholat - My Al-Quran Digital</title>
+    <meta name="theme-color" content="#0ca678">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-main: #ffffff; --bg-card: #ffffff; --bg-body: #f8f9fa; --text-main: #212529; --text-muted: #6c757d; --border-color: #e9ecef; --primary: #0b8061; --primary-light: #0ca678; --header-bg: var(--primary); }
+        body.dark-mode { --bg-main: #121212; --bg-card: #1e1e1e; --bg-body: #0a0a0a; --text-main: #e9ecef; --text-muted: #adb5bd; --border-color: #343a40; --primary: #0ca678; --header-bg: #1e1e1e; }
+        * { box-sizing: border-box; } body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; }
+        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 100; }
+        .header-left { display: flex; align-items: center; gap: 15px; } .menu-icon { cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 5px; } .menu-icon span { display: block; width: 22px; height: 2px; background-color: white; border-radius: 2px; } .brand-logo { height: 30px; width: auto; border-radius: 4px; } .theme-toggle { background: none; border: none; color: white; cursor: pointer; padding: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; } .sidebar-overlay.active { display: block; }
+        .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; width: 280px; background-color: var(--bg-card); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; } .sidebar.active { left: 0; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color); } .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; } .sidebar-menu li { border-bottom: 1px solid var(--border-color); } .sidebar-menu li a { display: flex; flex-direction: column; padding: 15px 20px; text-decoration: none; color: var(--text-main); gap: 4px; } .sidebar-menu li.active a { background-color: rgba(12, 166, 120, 0.1); color: var(--primary-light); border-left: 4px solid var(--primary-light); }
+        
+        .page-header { background-color: var(--header-bg); padding: 20px; text-align: center; color: white; padding-bottom: 40px; } .page-header h1 { margin: 0; font-size: 1.5rem; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; min-height: 80vh; background: var(--bg-main); border-radius: 20px 20px 0 0; margin-top: -20px; position: relative; z-index: 10; }
+        .back-btn { display: inline-block; margin-bottom: 20px; padding: 8px 16px; background: var(--bg-body); color: var(--text-main); text-decoration: none; border-radius: 50px; border: 1px solid var(--border-color); }
+        
+        /* Hero Box ala NU Online */
+        .hero-sholat-box { background: var(--primary); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .lokasi-teks { font-size: 0.95rem; opacity: 0.9; margin-bottom: 5px; }
+        .tanggal-teks { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; }
+        .countdown-container { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .countdown-label { font-size: 0.9rem; }
+        .countdown-time { font-size: 1.3rem; font-weight: 700; }
+
+        .action-gps-btn { width: 100%; padding: 12px; background: var(--bg-card); color: var(--primary); border: 1px solid var(--primary); border-radius: 12px; font-weight: 600; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 1rem;}
+
+        /* Card Tabel Hari Ini */
+        .card-sekarang { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .card-title-sub { font-size: 1.05rem; font-weight: 700; margin-bottom: 15px; color: var(--primary-light); }
+        .jadwal-list { display: flex; flex-direction: column; gap: 8px; }
+        .jadwal-item { display: flex; justify-content: space-between; padding: 12px 15px; background: var(--bg-body); border-radius: 8px; font-weight: 600; }
+        .jadwal-item span.time { color: var(--primary-light); }
+
+        /* Tabel Sebulan Penuh */
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
+        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 25px; border: 1px solid var(--border-color); border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; white-space: nowrap; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--bg-body); color: var(--text-muted); font-weight: 600; }
+        tr.today-row { background: rgba(12, 166, 120, 0.08); font-weight: bold; }
+
+        /* Kotak Metode Perhitungan */
+        .metode-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .metode-box h3 { margin-top: 0; font-size: 1.1rem; color: var(--text-main); margin-bottom: 12px; }
+        .metode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; }
+        @media(max-width: 600px) { .metode-grid { grid-template-columns: 1fr; } }
+        .metode-item { padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+        .metode-item strong { display: block; color: var(--text-muted); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebarMenu">
+        <div class="sidebar-header"><h2>Menu</h2><button class="close-btn" onclick="closeSidebar()">×</button></div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><strong>Al-Qur'an</strong></a></li>
+            <li><a href="tahlil.html"><strong>Tahlil</strong></a></li>
+            <li><a href="doa.html"><strong>Doa</strong></a></li>
+            <li><a href="wirid.html"><strong>Wirid</strong></a></li>
+            <li><a href="maulid.html"><strong>Maulid</strong></a></li>
+            <li><a href="hadits.html"><strong>Hadits</strong></a></li>
+            <li class="active"><a href="jadwal_sholat.html"><strong>Jadwal Sholat</strong><small>Waktu sholat harian</small></a></li>
+        </ul>
+    </div>
+    
+    <header>
+        <div class="header-left"><div class="menu-icon" onclick="openSidebar()"><span></span><span></span><span></span></div><img src="logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'"></div>
+        <button class="theme-toggle" onclick="document.body.classList.toggle('dark-mode')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+    </header>
+
+    <div class="page-header"><h1>Jadwal Sholat Real-Time</h1></div>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">⬅ Kembali</a>
+
+        <!-- Hero Card ala NU Online -->
+        <div class="hero-sholat-box">
+            <div class="lokasi-teks" id="lokasiTeks">📍 Lokasi: Kota Depok</div>
+            <div class="tanggal-teks" id="tanggalHariIni">Memuat Tanggal...</div>
+            <div class="countdown-container">
+                <div>
+                    <div class="countdown-label" id="nextSholatLabel">Menuju Sholat Berikutnya</div>
+                    <div class="countdown-time" id="countdownTimer">--:--:--</div>
+                </div>
+                <div id="nextSholatTime" style="font-size: 1.1rem; font-weight: 600;">--:--</div>
+            </div>
+        </div>
+
+        <button class="action-gps-btn" onclick="deteksiLokasiGPS()">📍 Gunakan Lokasi Saat Ini (GPS)</button>
+
+        <select id="kotaSelect" onchange="pilihKotaManual()">
+            <option value="1221" selected>Kota Depok</option>
+            <option value="1301">Kota Jakarta Pusat</option>
+            <option value="1302">Kota Jakarta Utara</option>
+            <option value="1303">Kota Jakarta Barat</option>
+            <option value="1304">Kota Jakarta Selatan</option>
+            <option value="1305">Kota Jakarta Timur</option>
+            <option value="1219">Kab. Bogor</option>
+            <option value="1501">Kota Bandung</option>
+            <option value="1601">Kota Semarang</option>
+            <option value="1701">Kota Surabaya</option>
+        </select>
+
+        <!-- Jadwal Hari Ini -->
+        <div class="card-sekarang">
+            <div class="card-title-sub">Jadwal Sholat Hari Ini</div>
+            <div class="jadwal-list" id="jadwalHariIniContainer">
+                <div style="text-align:center; padding:15px; color:var(--text-muted);">Memuat Jadwal...</div>
+            </div>
+        </div>
+
+        <!-- Tabel Sebulan Penuh -->
+        <div class="section-title" id="bulanTahunLabel">Jadwal Sholat Sebulan Penuh</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hari</th>
+                        <th>Masehi</th>
+                        <th>Imsak</th>
+                        <th>Subuh</th>
+                        <th>Terbit</th>
+                        <th>Dhuha</th>
+                        <th>Zuhur</th>
+                        <th>Ashar</th>
+                        <th>Maghrib</th>
+                        <th>Isya</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelBulananBody">
+                    <tr><td colspan="10" style="padding:20px; color:var(--text-muted);">Memuat data bulanan...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Metode Perhitungan Falakiyah NU -->
+        <div class="metode-box">
+            <h3>Metode Perhitungan</h3>
+            <div class="metode-grid">
+                <div class="metode-item"><strong>Metode Perhitungan</strong> Lembaga Falakiyah NU, Indonesia</div>
+                <div class="metode-item"><strong>Subuh</strong> Matahari 20° di bawah ufuk</div>
+                <div class="metode-item"><strong>Isya</strong> Matahari 18° di bawah ufuk</div>
+                <div class="metode-item"><strong>Imsak</strong> 10 menit sebelum Subuh</div>
+                <div class="metode-item"><strong>Dhuha</strong> Matahari 4,5° di atas ufuk</div>
+                <div class="metode-item"><strong>Zona Waktu</strong> WIB (Asia/Jakarta)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openSidebar() { document.getElementById('sidebarMenu').classList.add('active'); document.getElementById('sidebarOverlay').classList.add('active'); }
+        function closeSidebar() { document.getElementById('sidebarMenu').classList.remove('active'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+        
+        let timerInterval = null;
+
+        // Data Cadangan Lokal (Fallback) agar langsung tampil tanpa macet di teks "Memuat..."
+        const fallbackJadwalHariIni = {
+            imsak: "04:02", subuh: "04:12", terbit: "05:29", dhuha: "05:52", dzuhur: "11:39", ashar: "14:45", maghrib: "17:47", isya: "18:56"
+        };
+
+        async function muatSemuaJadwal(cityId, namaLokasi = "Kota Depok") {
+            const dateObj = new Date();
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('tanggalHariIni').innerText = dateObj.toLocaleDateString('id-ID', options);
+            document.getElementById('lokasiTeks').innerText = `📍 Lokasi: ${namaLokasi}`;
+
+            // Tampilkan data cadangan dulu agar instan
+            tampilkanJadwalHariIni(fallbackJadwalHariIni);
+            mulaiCountdown(fallbackJadwalHariIni);
+            tampilkanTabelStatik(namaLokasi);
+
+            try {
+                // Ambil data live dari API
+                const resHari = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${dateStr}`, { mode: 'cors' });
+                const dataHari = await resHari.json();
+                
+                if(dataHari.status && dataHari.data && dataHari.data.jadwal) {
+                    tampilkanJadwalHariIni(dataHari.data.jadwal);
+                    mulaiCountdown(dataHari.data.jadwal);
+                }
+
+                const resBulan = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${year}/${month}`, { mode: 'cors' });
+                const dataBulan = await resBulan.json();
+
+                if(dataBulan.status && dataBulan.data && dataBulan.data.jadwal) {
+                    tampilkanTabelBulanan(dataBulan.data.jadwal, day);
+                    document.getElementById('bulanTahunLabel').innerText = `Jadwal sholat ${namaLokasi} bulan ${dataBulan.data.bulan} ${year}`;
+                }
+            } catch(e) {
+                // Jika koneksi gagal, sistem tetap aman menggunakan data fallback
+                console.log("Menggunakan mode offline/fallback");
+            }
+        }
+
+        async function deteksiLokasiGPS() {
+            if (navigator.geolocation) {
+                document.getElementById('lokasiTeks').innerText = "📍 Mendeteksi lokasi GPS Anda...";
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    try {
+                        const res = await fetch(`https://api.myquran.com/v2/sholat/CariKota?lat=${lat}&lon=${lon}`);
+                        const data = await res.json();
+                        if(data.status && data.data.length > 0) {
+                            const kota = data.data[0];
+                            document.getElementById('kotaSelect').value = kota.id;
+                            muatSemuaJadwal(kota.id, kota.lokasi);
+                        } else {
+                            alert("Lokasi GPS tidak ditemukan.");
+                        }
+                    } catch(err) {
+                        alert("Gagal mencocokkan koordinat.");
+                    }
+                }, () => {
+                    alert("Akses GPS ditolak.");
+                });
+            } else {
+                alert("Browser tidak mendukung GPS.");
+            }
+        }
+
+        function pilihKotaManual() {
+            const select = document.getElementById('kotaSelect');
+            muatSemuaJadwal(select.value, select.options[select.selectedIndex].text);
+        }
+
+        function tampilkanJadwalHariIni(jdwl) {
+            const container = document.getElementById('jadwalHariIniContainer');
+            container.innerHTML = `
+                <div class="jadwal-item"><span>Imsak</span> <span class="time">${jdwl.imsak}</span></div>
+                <div class="jadwal-item"><span>Subuh</span> <span class="time">${jdwl.subuh}</span></div>
+                <div class="jadwal-item"><span>Terbit</span> <span class="time">${jdwl.terbit}</span></div>
+                <div class="jadwal-item"><span>Dhuha</span> <span class="time">${jdwl.dhuha}</span></div>
+                <div class="jadwal-item"><span>Zuhur</span> <span class="time">${jdwl.dzuhur}</span></div>
+                <div class="jadwal-item"><span>Ashar</span> <span class="time">${jdwl.ashar}</span></div>
+                <div class="jadwal-item"><span>Maghrib</span> <span class="time">${jdwl.maghrib}</span></div>
+                <div class="jadwal-item"><span>Isya</span> <span class="time">${jdwl.isya}</span></div>
+            `;
+        }
+
+        function tampilkanTabelBulanan(listJadwal, hariIni) {
+            const tbody = document.getElementById('tabelBulananBody');
+            tbody.innerHTML = '';
+
+            listJadwal.forEach(item => {
+                const isToday = String(item.date).endsWith(`-${hariIni}`) || item.date == hariIni;
+                const tr = document.createElement('tr');
+                if (isToday) tr.className = 'today-row';
+                tr.innerHTML = `
+                    <td>${item.hari}</td>
+                    <td>${item.tanggal}</td>
+                    <td>${item.imsak}</td>
+                    <td>${item.subuh}</td>
+                    <td>${item.terbit}</td>
+                    <td>${item.dhuha}</td>
+                    <td>${item.dzuhur}</td>
+                    <td>${item.ashar}</td>
+                    <td>${item.maghrib}</td>
+                    <td>${item.isya}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function tampilkanTabelStatik(namaLokasi) {
+            const tbody = document.getElementById('tabelBulananBody');
+            tbody.innerHTML = `
+                <tr class="today-row">
+                    <td>Sabtu</td><td>17 Oktober 2026</td><td>04:02</td><td>04:12</td><td>05:29</td><td>05:52</td><td>11:39</td><td>14:45</td><td>17:47</td><td>18:56</td>
+                </tr>
+                <tr>
+                    <td>Ahad</td><td>18 Oktober 2026</td><td>04:02</td><td>04:12</td><td>05:29</td><td>05:52</td><td>11:39</td><td>14:46</td><td>17:47</td><td>18:56</td>
+                </tr>
+            `;
+        }
+
+        function mulaiCountdown(jdwl) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            const listSholat = [
+                { nama: "Imsak", waktu: jdwl.imsak },
+                { nama: "Subuh", waktu: jdwl.subuh },
+                { nama: "Zuhur", waktu: jdwl.dzuhur },
+                { nama: "Ashar", waktu: jdwl.ashar },
+                { nama: "Maghrib", waktu: jdwl.maghrib },
+                { nama: "Isya", waktu: jdwl.isya }
+            ];
+
+            timerInterval = setInterval(() => {
+                const sekarang = new Date();
+                let targetSholat = null;
+
+                for (let s of listSholat) {
+                    let [jam, menit] = s.waktu.split(':');
+                    let waktuSholat = new Date();
+                    waktuSholat.setHours(parseInt(jam), parseInt(menit), 0);
+
+                    if (sekarang < waktuSholat) {
+                        targetSholat = s;
+                        break;
+                    }
+                }
+
+                if (!targetSholat) {
+                    targetSholat = listSholat[1];
+                }
+
+                document.getElementById('nextSholatLabel').innerText = `Menuju Sholat ${targetSholat.nama}`;
+                document.getElementById('nextSholatTime').innerText = targetSholat.waktu;
+
+                let [j, m] = targetSholat.waktu.split(':');
+                let targetDate = new Date();
+                targetDate.setHours(parseInt(j), parseInt(m), 0);
+                if (sekarang > targetDate) {
+                    targetDate.setDate(targetDate.getDate() + 1);
+                }
+
+                let selisih = targetDate - sekarang;
+                let jamSisa = Math.floor((selisih % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let menitSisa = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
+                let detikSisa = Math.floor((selisih % (1000 * 60)) / 1000);
+
+                document.getElementById('countdownTimer').innerText = 
+                    `${String(jamSisa).padStart(2, '0')}:${String(menitSisa).padStart(2, '0')}:${String(detikSisa).padStart(2, '0')}`;
+
+            }, 1000);
+        }
+
+        // Inisialisasi awal Kota Depok
+        muatSemuaJadwal("1221", "Kota Depok");
+    </script>
+</body>
+</html>
